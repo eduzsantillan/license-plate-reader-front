@@ -96,10 +96,13 @@ export function LicensePlateScanner() {
         
         {capturedImage && (
           <div className="relative w-full h-full">
-            <img 
+            <Image 
               src={capturedImage} 
               alt="Captured license plate" 
-              className="w-full h-full object-cover" 
+              className="object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, 500px"
+              priority
             />
           </div>
         )}

@@ -30,7 +30,7 @@ export function CameraCapture({
         videoRef.current.srcObject = stream;
         onCaptureStart();
       }
-    } catch (err) {
+    } catch {
       throw new Error('Camera access denied or not available');
     }
   }, [videoRef, onCaptureStart]);
