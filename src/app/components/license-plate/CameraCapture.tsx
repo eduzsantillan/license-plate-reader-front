@@ -7,33 +7,56 @@ interface CameraCaptureProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   onCaptureStart: () => void;
   onCaptureComplete: (imageBase64: string, imageUrl: string) => void;
+  onError?: (error: string) => void;
 }
 
 export function CameraCapture({ 
   videoRef, 
   canvasRef, 
   onCaptureStart, 
-  onCaptureComplete 
+  onCaptureComplete,
+  onError
 }: CameraCaptureProps) {
   
   const startCamera = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      console.log('Requesting camera access...');
+      
+      // Check if mediaDevices is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Media devices API not available in this browser');
+      }
+      
+      const constraints = { 
         video: { 
           facingMode: 'environment',
           width: { ideal: 1280 },
           height: { ideal: 720 }
         } 
-      });
+      };
+      
+      console.log('Camera constraints:', constraints);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log('Camera access granted, stream received');
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         onCaptureStart();
+        console.log('Video element initialized with camera stream');
+      } else {
+        console.error('Video element reference is null');
       }
-    } catch {
-      throw new Error('Camera access denied or not available');
+    } catch (error) {
+      console.error('Camera error:', error);
+      if (onError) {
+        if (error instanceof Error) {
+          onError(`Camera error: ${error.message}`);
+        } else {
+          onError('Camera access denied or not available. Please check your browser permissions.');
+        }
+      }
     }
-  }, [videoRef, onCaptureStart]);
+  }, [videoRef, onCaptureStart, onError]);
 
   const stopCamera = useCallback(() => {
     if (videoRef.current && videoRef.current.srcObject) {

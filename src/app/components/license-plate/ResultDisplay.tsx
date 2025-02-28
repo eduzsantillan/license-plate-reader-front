@@ -7,37 +7,50 @@ interface ResultDisplayProps {
 }
 
 export function ResultDisplay({ isLoading, licensePlate, error }: ResultDisplayProps) {
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-600 dark:text-gray-300">Processing image...</p>
-      </div>
-    );
-  }
+  const isCameraError = error && (
+    error.includes('camera') || 
+    error.includes('Camera') || 
+    error.includes('media') || 
+    error.includes('Media') ||
+    error.includes('permission')
+  );
 
-  if (licensePlate) {
-    return (
-      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">License Plate Detected</h2>
-        <div className="inline-block px-8 py-4 bg-blue-100 dark:bg-blue-900 rounded-lg">
-          <p className="text-3xl font-bold text-blue-800 dark:text-blue-200">{licensePlate}</p>
+  return (
+    <div className="w-full">
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center p-6 bg-gray-100 rounded-lg">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-3"></div>
+          <p className="text-gray-700">Processing image...</p>
         </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md border-l-4 border-red-500">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Error</h2>
-        <p className="text-red-600 dark:text-red-400">{error}</p>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          If this error persists, please try with a different image or check your network connection.
-        </p>
-      </div>
-    );
-  }
-
-  return null;
+      )}
+      
+      {!isLoading && licensePlate && (
+        <div className="p-6 bg-green-100 rounded-lg">
+          <h3 className="text-lg font-semibold text-green-800 mb-2">License Plate Detected</h3>
+          <div className="bg-white p-4 rounded border-2 border-green-500 text-center">
+            <p className="text-3xl font-bold tracking-wider text-gray-800">{licensePlate}</p>
+          </div>
+        </div>
+      )}
+      
+      {!isLoading && error && (
+        <div className={`p-6 ${isCameraError ? 'bg-yellow-100' : 'bg-red-100'} rounded-lg`}>
+          <h3 className={`text-lg font-semibold ${isCameraError ? 'text-yellow-800' : 'text-red-800'} mb-2`}>
+            {isCameraError ? 'Camera Issue' : 'Error'}
+          </h3>
+          <p className={`${isCameraError ? 'text-yellow-700' : 'text-red-700'}`}>{error}</p>
+          {isCameraError && (
+            <div className="mt-3 text-sm text-gray-700">
+              <p>Possible solutions:</p>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>Make sure you've granted camera permissions in your browser</li>
+                <li>Try using a different browser (Chrome or Firefox recommended)</li>
+                <li>Use the "Upload Image" option instead</li>
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }

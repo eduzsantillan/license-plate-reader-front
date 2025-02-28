@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { CameraCapture } from './CameraCapture';
 import { FileUpload } from './FileUpload';
@@ -13,6 +13,7 @@ export function LicensePlateScanner() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraLoading, setCameraLoading] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,6 +23,9 @@ export function LicensePlateScanner() {
     setCapturedImage(null);
     setLicensePlate(null);
     setError(null);
+    setCameraActive(false);
+    setCameraLoading(false);
+    stopCamera();
     
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -29,8 +33,22 @@ export function LicensePlateScanner() {
   };
 
   const handleCaptureStart = () => {
+    setCameraLoading(false);
     setCameraActive(true);
+    setError(null);
+  };
+
+  const handleCameraError = (errorMessage: string) => {
+    setCameraLoading(false);
+    setCameraActive(false);
+    setError(errorMessage);
+  };
+
+  const handleStartCamera = () => {
     resetState();
+    setCameraLoading(true);
+    setError(null);
+    startCamera();
   };
 
   const handleImageProcessing = async (imageBase64: string, imageUrl: string) => {
@@ -67,11 +85,12 @@ export function LicensePlateScanner() {
     }
   };
 
-  const { startCamera, captureImage } = CameraCapture({
+  const { startCamera, stopCamera, captureImage } = CameraCapture({
     videoRef,
     canvasRef,
     onCaptureStart: handleCaptureStart,
-    onCaptureComplete: handleImageProcessing
+    onCaptureComplete: handleImageProcessing,
+    onError: handleCameraError
   });
 
   const { handleFileUpload, triggerFileUpload } = FileUpload({
@@ -80,6 +99,24 @@ export function LicensePlateScanner() {
     onUploadComplete: handleImageProcessing,
     onUploadError: setError
   });
+
+  // Clean up camera resources when component unmounts
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
+
+  // Check if camera is supported
+  useEffect(() => {
+    const checkCameraSupport = () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Camera access is not supported in this browser. Please try using a different browser or upload an image instead.');
+      }
+    };
+    
+    checkCameraSupport();
+  }, []);
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -109,7 +146,7 @@ export function LicensePlateScanner() {
         
         <canvas ref={canvasRef} className="hidden" />
         
-        {!cameraActive && !capturedImage && (
+        {!cameraActive && !capturedImage && !cameraLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-gray-800 bg-opacity-70">
             <Image 
               src="/camera.svg" 
@@ -119,6 +156,13 @@ export function LicensePlateScanner() {
               className="mb-4 opacity-70"
             />
             <p>Select an option below</p>
+          </div>
+        )}
+
+        {cameraLoading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-gray-800 bg-opacity-70">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mb-4"></div>
+            <p>Initializing camera...</p>
           </div>
         )}
       </div>
@@ -132,10 +176,10 @@ export function LicensePlateScanner() {
       />
       
       <div className="flex flex-wrap justify-center gap-4 mb-6">
-        {!cameraActive && !capturedImage && !isLoading && (
+        {!cameraActive && !capturedImage && !isLoading && !cameraLoading && (
           <>
             <button
-              onClick={startCamera}
+              onClick={handleStartCamera}
               className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
