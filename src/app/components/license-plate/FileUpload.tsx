@@ -3,7 +3,7 @@
 import { RefObject, useCallback } from 'react';
 
 interface FileUploadProps {
-  fileInputRef: RefObject<HTMLInputElement>;
+  fileInputRef: RefObject<HTMLInputElement | null>;
   onUploadStart: () => void;
   onUploadComplete: (imageBase64: string, imageUrl: string) => void;
   onUploadError: (error: string) => void;

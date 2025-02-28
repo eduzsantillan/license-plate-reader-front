@@ -3,8 +3,8 @@
 import { RefObject, useCallback } from 'react';
 
 interface CameraCaptureProps {
-  videoRef: RefObject<HTMLVideoElement>;
-  canvasRef: RefObject<HTMLCanvasElement>;
+  videoRef: RefObject<HTMLVideoElement | null>;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
   onCaptureStart: () => void;
   onCaptureComplete: (imageBase64: string, imageUrl: string) => void;
 }
