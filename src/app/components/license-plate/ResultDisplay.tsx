@@ -43,9 +43,9 @@ export function ResultDisplay({ isLoading, licensePlate, error }: ResultDisplayP
             <div className="mt-3 text-sm text-gray-700">
               <p>Possible solutions:</p>
               <ul className="list-disc pl-5 mt-1 space-y-1">
-                <li>Make sure you've granted camera permissions in your browser</li>
+                <li>Make sure you&apos;ve granted camera permissions in your browser</li>
                 <li>Try using a different browser (Chrome or Firefox recommended)</li>
-                <li>Use the "Upload Image" option instead</li>
+                <li>Use the &quot;Upload Image&quot; option instead</li>
               </ul>
             </div>
           )}
